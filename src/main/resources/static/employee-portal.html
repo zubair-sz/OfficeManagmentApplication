@@ -5,14 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Portal - Office Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .portal-header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-            color: white;
-            border-radius: 0.75rem;
-            padding: 2.5rem 2rem;
-        }
-    </style>
+    <link href="css/style.css" rel="stylesheet">
 </head>
 <body class="bg-body-tertiary">
 
@@ -23,7 +16,7 @@
             🏢 Office Management <span class="badge bg-success fs-7 fw-normal ms-2">Employee Portal</span>
         </a>
         <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="darkModeToggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" id="darkModeToggle">🌙 Dark Mode</button>
             <a href="index.html" class="btn btn-outline-primary btn-sm">🏠 Home</a>
         </div>
     </div>
@@ -35,8 +28,35 @@
     <div class="portal-header shadow-sm mb-4">
         <h1 class="display-6 fw-bold mb-2">Welcome, Team Member! 👋</h1>
         <p class="text-light opacity-85 mb-0">
-            View your company directory listing, check department colleagues, and verify your contact information.
+            View your company directory listing, check department colleagues, and track your assigned work items.
         </p>
+    </div>
+
+    <!-- Employee Tasks Section -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+            <span class="fw-semibold">📋 My Assigned Tasks</span>
+            <select id="taskEmployeeFilter" class="form-select form-select-sm" style="width: 200px;">
+                <option value="">Select your name to view tasks...</option>
+            </select>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Task Title</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Update Status</th>
+                    </tr>
+                    </thead>
+                    <tbody id="employeeTaskTableBody">
+                    <tr><td colspan="4" class="text-center text-muted py-4">Please select your name above to view tasks</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Quick Search & Directory Section -->
@@ -44,10 +64,10 @@
         <div class="card-header bg-dark text-white py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <span class="fw-semibold">👥 Company Staff Directory</span>
             <div class="d-flex gap-2">
-                <select id="departmentFilter" class="form-select form-select-sm" style="width: 170px;" onchange="filterTable()">
+                <select id="departmentFilter" class="form-select form-select-sm" style="width: 170px;">
                     <option value="">All Departments</option>
                 </select>
-                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search name/dept..." style="width: 210px;" oninput="filterTable()">
+                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search name/dept..." style="width: 210px;">
             </div>
         </div>
         <div class="card-body p-0">
@@ -60,116 +80,14 @@
                         <th class="pe-4">Department</th>
                     </tr>
                     </thead>
-                    <tbody id="employeeTableBody">
-                    <!-- Dynamic data loads here -->
-                    </tbody>
+                    <tbody id="employeeTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    const API_URL = 'http://localhost:8080/api/employees';
-    let allEmployeesCache = [];
-
-    function toggleDarkMode() {
-        const htmlElement = document.documentElement;
-        const toggleBtn = document.getElementById('darkModeToggle');
-
-        if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
-            htmlElement.setAttribute('data-bs-theme', 'light');
-            toggleBtn.innerHTML = '🌙 Dark Mode';
-            localStorage.setItem('theme', 'light');
-        } else {
-            htmlElement.setAttribute('data-bs-theme', 'dark');
-            toggleBtn.innerHTML = '☀️ Light Mode';
-            localStorage.setItem('theme', 'dark');
-        }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-bs-theme', savedTheme);
-        const toggleBtn = document.getElementById('darkModeToggle');
-        if (toggleBtn) {
-            toggleBtn.innerHTML = savedTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
-        }
-        fetchEmployees();
-    });
-
-    async function fetchEmployees() {
-        try {
-            const response = await fetch(API_URL);
-            allEmployeesCache = await response.json();
-            populateDepartmentDropdown(allEmployeesCache);
-            filterTable();
-        } catch (error) {
-            console.error('Error fetching employees:', error);
-        }
-    }
-
-    function populateDepartmentDropdown(employees) {
-        const dropdown = document.getElementById('departmentFilter');
-        const currentSelection = dropdown.value;
-
-        const deptMap = new Map();
-        employees.forEach(emp => {
-            if (emp.department) {
-                const trimmed = emp.department.trim();
-                deptMap.set(trimmed.toLowerCase(), trimmed);
-            }
-        });
-
-        dropdown.innerHTML = '<option value="">All Departments</option>';
-        deptMap.forEach((originalName) => {
-            const option = document.createElement('option');
-            option.value = originalName.toLowerCase();
-            option.textContent = originalName;
-            dropdown.appendChild(option);
-        });
-
-        dropdown.value = currentSelection;
-    }
-
-    function filterTable() {
-        const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-        const selectedDept = document.getElementById('departmentFilter').value;
-
-        const filtered = allEmployeesCache.filter(emp => {
-            const matchesSearch = !searchQuery ||
-                (emp.name && emp.name.toLowerCase().includes(searchQuery)) ||
-                (emp.email && emp.email.toLowerCase().includes(searchQuery)) ||
-                (emp.department && emp.department.toLowerCase().includes(searchQuery));
-
-            const matchesDept = !selectedDept ||
-                (emp.department && emp.department.trim().toLowerCase() === selectedDept);
-
-            return matchesSearch && matchesDept;
-        });
-
-        renderTable(filtered);
-    }
-
-    function renderTable(employees) {
-        const tbody = document.getElementById('employeeTableBody');
-        tbody.innerHTML = '';
-
-        if (employees.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-4">No personnel found</td></tr>`;
-            return;
-        }
-
-        employees.forEach(emp => {
-            tbody.innerHTML += `
-                <tr>
-                    <td class="ps-4 fw-semibold">${emp.name}</td>
-                    <td class="text-muted">${emp.email}</td>
-                    <td class="pe-4"><span class="badge bg-primary bg-opacity-10 text-primary border px-2 py-1">${emp.department}</span></td>
-                </tr>
-            `;
-        });
-    }
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/employee-portal.js"></script>
 </body>
 </html>
