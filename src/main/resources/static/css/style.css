@@ -1,0 +1,78 @@
+/* Shared Custom Styles for Office Management System */
+
+.hero-section {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: white;
+    border-radius: 1rem;
+    padding: 4rem 2rem;
+}
+
+.feature-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-top: 4px solid #3b82f6 !important;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+}
+
+.stat-card {
+    border-left: 5px solid;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.portal-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: white;
+    border-radius: 0.75rem;
+    padding: 2.5rem 2rem;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+/* Professional Portal Entry Buttons */
+.portal-btn {
+    padding: 1rem 2rem;
+    font-weight: 600;
+    border-radius: 50rem;
+    transition: all 0.25s ease-in-out;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.portal-btn-primary {
+    background-color: #ffffff;
+    color: #1e3a8a;
+    border: 2px solid #ffffff;
+}
+
+.portal-btn-primary:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}
+
+.portal-btn-outline {
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.portal-btn-outline:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border-color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+}

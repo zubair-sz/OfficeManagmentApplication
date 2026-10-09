@@ -5,21 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Office Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .stat-card {
-            border-left: 5px solid;
-            transition: transform 0.2s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-        .table th {
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-        }
-    </style>
+    <!-- External Stylesheet -->
+    <link href="css/style.css" rel="stylesheet">
 </head>
 <body class="bg-body-tertiary">
 
@@ -92,11 +79,9 @@
         <div class="card-header bg-dark text-white py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <span class="fw-semibold">📋 Employee Directory</span>
             <div class="d-flex gap-2">
-                <!-- Department Filter Dropdown -->
                 <select id="departmentFilter" class="form-select form-select-sm" style="width: 170px;" onchange="filterTable()">
                     <option value="">All Departments</option>
                 </select>
-                <!-- Search Input -->
                 <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search name/email..." style="width: 210px;" oninput="filterTable()">
             </div>
         </div>
@@ -121,30 +106,24 @@
     </div>
 </div>
 
-<!-- Toast Notification Container (Bottom-Right) -->
+<!-- Toast Notification Container -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div id="liveToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
-            <div class="toast-body py-3" id="toastMessage">
-                Action successful!
-            </div>
+            <div class="toast-body py-3" id="toastMessage">Action successful!</div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap JS Bundle for Toasts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
     const API_URL = 'http://localhost:8080/api/employees';
     let allEmployeesCache = [];
 
-    // Dark Mode Handling
     function toggleDarkMode() {
         const htmlElement = document.documentElement;
         const toggleBtn = document.getElementById('darkModeToggle');
-
         if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
             htmlElement.setAttribute('data-bs-theme', 'light');
             toggleBtn.innerHTML = '🌙 Dark Mode';
@@ -170,7 +149,6 @@
         try {
             const response = await fetch(API_URL);
             allEmployeesCache = await response.json();
-
             updateDashboardStats(allEmployeesCache);
             populateDepartmentDropdown(allEmployeesCache);
             filterTable();
@@ -181,16 +159,14 @@
     }
 
     function updateDashboardStats(employees) {
-        const totalEmp = employees.length;
+        document.getElementById('totalEmployeesCount').innerText = employees.length;
         const uniqueDepts = new Set(employees.map(emp => emp.department ? emp.department.trim().toLowerCase() : ''));
-        document.getElementById('totalEmployeesCount').innerText = totalEmp;
         document.getElementById('totalDepartmentsCount').innerText = uniqueDepts.size;
     }
 
     function populateDepartmentDropdown(employees) {
         const dropdown = document.getElementById('departmentFilter');
         const currentSelection = dropdown.value;
-
         const deptMap = new Map();
         employees.forEach(emp => {
             if (emp.department) {
@@ -198,7 +174,6 @@
                 deptMap.set(trimmed.toLowerCase(), trimmed);
             }
         });
-
         dropdown.innerHTML = '<option value="">All Departments</option>';
         deptMap.forEach((originalName) => {
             const option = document.createElement('option');
@@ -206,37 +181,30 @@
             option.textContent = originalName;
             dropdown.appendChild(option);
         });
-
         dropdown.value = currentSelection;
     }
 
     function filterTable() {
         const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
         const selectedDept = document.getElementById('departmentFilter').value;
-
         const filtered = allEmployeesCache.filter(emp => {
             const matchesSearch = !searchQuery ||
                 (emp.name && emp.name.toLowerCase().includes(searchQuery)) ||
                 (emp.email && emp.email.toLowerCase().includes(searchQuery));
-
             const matchesDept = !selectedDept ||
                 (emp.department && emp.department.trim().toLowerCase() === selectedDept);
-
             return matchesSearch && matchesDept;
         });
-
         renderTable(filtered);
     }
 
     function renderTable(employees) {
         const tbody = document.getElementById('employeeTableBody');
         tbody.innerHTML = '';
-
         if (employees.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No employees found</td></tr>`;
             return;
         }
-
         employees.forEach(emp => {
             tbody.innerHTML += `
                 <tr>
@@ -258,12 +226,10 @@
             showToast('No data available to export.', 'bg-warning text-dark');
             return;
         }
-
         let csvContent = "data:text/csv;charset=utf-8,ID,Name,Email,Department\r\n";
         allEmployeesCache.forEach(emp => {
             csvContent += `"${emp.id}","${emp.name}","${emp.email}","${emp.department}"\r\n`;
         });
-
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
@@ -271,19 +237,15 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
         showToast('Employee directory exported successfully!', 'bg-success');
     }
 
     function showToast(message, bgClass = 'bg-success') {
         const toastEl = document.getElementById('liveToast');
         const toastMessage = document.getElementById('toastMessage');
-
         toastEl.className = `toast align-items-center text-white border-0 shadow-lg ${bgClass}`;
         toastMessage.innerText = message;
-
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
+        new bootstrap.Toast(toastEl).show();
     }
 
     function prepareEdit(id, name, email, department) {
@@ -291,7 +253,6 @@
         document.getElementById('name').value = name;
         document.getElementById('email').value = email;
         document.getElementById('department').value = department;
-
         document.getElementById('formHeader').innerText = '✏️ Edit Employee (ID: ' + id + ')';
         document.getElementById('saveButton').innerText = 'Update Changes';
         document.getElementById('cancelButton').classList.remove('d-none');
@@ -310,16 +271,12 @@
         e.preventDefault();
         const id = document.getElementById('employeeId').value;
         const isEditing = !!id;
-
         const employeeData = {
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
             department: document.getElementById('department').value
         };
-
-        if (isEditing) {
-            employeeData.id = Number(id);
-        }
+        if (isEditing) employeeData.id = Number(id);
 
         try {
             const response = await fetch(API_URL, {
@@ -327,9 +284,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(employeeData)
             });
-
             if (!response.ok) throw new Error('Failed to save employee');
-
             resetForm();
             fetchEmployees();
             showToast(isEditing ? 'Employee updated successfully!' : 'Employee added successfully!');
