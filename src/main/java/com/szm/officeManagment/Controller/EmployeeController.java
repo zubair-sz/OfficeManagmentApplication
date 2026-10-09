@@ -19,16 +19,13 @@ public class EmployeeController {
 
     // GET all employees
     @GetMapping
-    public List<Employee> getAllEmployees() {
+    public List<Employee> getAllEmployees(@RequestParam(required = false) String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return employeeRepository.findByNameContainingIgnoreCaseOrDepartmentContainingIgnoreCase(keyword, keyword);
+        }
         return employeeRepository.findAll();
     }
-
     // POST create a new employee
-//    @PostMapping
-//    public Employee createEmployee(@RequestBody Employee employee) {
-//        return employeeRepository.save(employee);
-//    }
-
     @PostMapping
     public ResponseEntity<?> createEmployee(@RequestBody Employee employee) {
         try {

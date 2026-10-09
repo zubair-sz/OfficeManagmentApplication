@@ -36,9 +36,15 @@
         </div>
     </div>
 
-    <!-- Employee List Table -->
+    <!-- Employee List Table with Search Bar -->
     <div class="card shadow-sm">
-        <div class="card-header bg-secondary text-white">Employee Directory</div>
+        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <span>Employee Directory</span>
+            <!-- Search Input -->
+            <div class="input-group" style="width: 250px;">
+                <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search name/dept...">
+            </div>
+        </div>
         <div class="card-body">
             <table class="table table-striped align-middle">
                 <thead>
@@ -59,30 +65,45 @@
 </div>
 
 <script>
-    // Updated absolute URL to explicitly connect to your Spring Boot backend on port 8080
     const API_URL = 'http://localhost:8080/api/employees';
 
-    async function fetchEmployees() {
+    async function fetchEmployees(keyword = '') {
         try {
-            const response = await fetch(API_URL);
+            let url = API_URL;
+            if (keyword) {
+                url += `?keyword=${encodeURIComponent(keyword)}`;
+            }
+            const response = await fetch(url);
             const employees = await response.json();
             const tbody = document.getElementById('employeeTableBody');
             tbody.innerHTML = '';
+
+            if (employees.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No employees found</td></tr>`;
+                return;
+            }
+
             employees.forEach(emp => {
                 tbody.innerHTML += `
-                        <tr>
-                            <td>${emp.id}</td>
-                            <td>${emp.name}</td>
-                            <td>${emp.email}</td>
-                            <td>${emp.department}</td>
-                            <td><button class="btn btn-danger btn-sm" onclick="deleteEmployee(${emp.id})">Delete</button></td>
-                        </tr>
-                    `;
+                    <tr>
+                        <td>${emp.id}</td>
+                        <td>${emp.name}</td>
+                        <td>${emp.email}</td>
+                        <td>${emp.department}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="deleteEmployee(${emp.id})">Delete</button></td>
+                    </tr>
+                `;
             });
         } catch (error) {
             console.error('Error fetching employees:', error);
         }
     }
+
+    // Search bar event listener (filters as you type)
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const keyword = e.target.value;
+        fetchEmployees(keyword);
+    });
 
     document.getElementById('employeeForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -104,6 +125,7 @@
             }
 
             document.getElementById('employeeForm').reset();
+            document.getElementById('searchInput').value = ''; // Reset search bar on new add
             fetchEmployees();
         } catch (error) {
             console.error('Error saving employee:', error);
@@ -113,9 +135,11 @@
 
     async function deleteEmployee(id) {
         await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-        fetchEmployees();
+        const currentKeyword = document.getElementById('searchInput').value;
+        fetchEmployees(currentKeyword);
     }
 
+    // Initial load
     fetchEmployees();
 </script>
 </body>
